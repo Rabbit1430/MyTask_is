@@ -1,47 +1,105 @@
 <script lang="ts">
-  import svelteLogo from './assets/svelte.svg'
-  import viteLogo from '/vite.svg'
-  import Counter from './lib/Counter.svelte'
+  import { onMount } from 'svelte';
+  
+  let datamoney: string[] = [];
+  let onevalute: string = '';
+  let twovalute: string = '';
+  let dataonevalute: number ;
+  let datatwovalute: number ;
+
+
+const apimoney = async () => {
+  const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD')
+  const data = await response.json() as {rates: Record<string, number>}
+datamoney =  Object.keys(data.rates);
+onevalute = datamoney[0]
+twovalute = datamoney[1]
+
+
+
+}
+
+
+const convertmoney = async(valute: number, one: string, two: string) => {
+  const response = await fetch(`https://api.exchangerate-api.com/v4/latest/${one}`);
+    const data = await response.json() as { rates: Record<string, number> };
+    const mydata = data.rates[two];
+    return +(valute * mydata).toFixed(2);
+
+}
+
+  
+  
+
+  const updateonevalute = () => {
+    convertmoney(dataonevalute, onevalute, twovalute).then((res) => {
+      datatwovalute = res
+    });
+  }
+
+  const updatetwovalute = () => {
+    convertmoney(datatwovalute, twovalute, onevalute).then((res) => {
+      dataonevalute = res
+    });
+
+  }
+
+onMount(apimoney);
+ 
 </script>
 
-<main>
-  <div>
-    <a href="https://vitejs.dev" target="_blank" rel="noreferrer">
-      <img src={viteLogo} class="logo" alt="Vite Logo" />
-    </a>
-    <a href="https://svelte.dev" target="_blank" rel="noreferrer">
-      <img src={svelteLogo} class="logo svelte" alt="Svelte Logo" />
-    </a>
-  </div>
-  <h1>Vite + Svelte</h1>
-
-  <div class="card">
-    <Counter />
-  </div>
-
-  <p>
-    Check out <a href="https://github.com/sveltejs/kit#readme" target="_blank" rel="noreferrer">SvelteKit</a>, the official Svelte app framework powered by Vite!
-  </p>
-
-  <p class="read-the-docs">
-    Click on the Vite and Svelte logos to learn more
-  </p>
-</main>
-
 <style>
-  .logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-    transition: filter 300ms;
+ h1 {
+    font-size: 24px;
+    margin-bottom: 16px;
   }
-  .logo:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
+
+  div {
+    margin-bottom: 16px;
   }
-  .logo.svelte:hover {
-    filter: drop-shadow(0 0 2em #ff3e00aa);
+
+  span {
+    font-weight: bold;
+    margin-right: 8px;
   }
-  .read-the-docs {
-    color: #888;
+
+  select, input {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+  }
+
+  p {
+    font-size: 18px;
+    font-weight: bold;
   }
 </style>
+
+<h1>Конвертирование валют</h1>
+<div><span>Валюта №1</span>
+<select bind:value={onevalute} on:change={updateonevalute}>
+{#each datamoney as valute}
+<option value={valute}>{valute}</option>
+{/each}
+</select>
+
+</div>
+<div> <input type="number" bind:value={dataonevalute} min="0" step="0.01" on:input={updateonevalute} ></div>
+
+
+<div><span>Валюта №2</span>
+  <select bind:value={twovalute} on:change={updatetwovalute}>
+  {#each datamoney as valute}
+  <option value={valute}>{valute}</option>
+  {/each}
+  </select>
+  </div>
+  
+  <div> <input type="number" bind:value={datatwovalute} min="0" step="0.01" on:input={updatetwovalute}></div>
+  <h2>Результат:</h2>
+  <p>{dataonevalute !== undefined && dataonevalute !== null ? dataonevalute : 0} {onevalute} = {datatwovalute !== undefined && datatwovalute !== null ? datatwovalute : 0} {twovalute}</p>
+
+
+
+
