@@ -2,14 +2,14 @@
   import { onMount } from 'svelte';
   
   let datamoney: string[] = [];
-  let onevalute: string = '';
+  let onevalute: string = 'USD';
   let twovalute: string = '';
   let dataonevalute: number ;
   let datatwovalute: number ;
 
 
 const apimoney = async () => {
-  const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD')
+  const response = await fetch(`https://api.exchangerate-api.com/v4/latest/${onevalute}`)
   const data = await response.json() as {rates: Record<string, number>}
 datamoney =  Object.keys(data.rates);
 onevalute = datamoney[0]
